@@ -161,3 +161,85 @@ def classifyPerson():
     
     
 
+
+# ## 将图像转换为测试向量
+
+# In[8]:
+
+
+import numpy as np
+
+
+def img2vector(filename):
+    #创建1 X 1024 的numpy 数组
+    returnVect = np.zeros((1, 1024))
+    #打开文件
+    fr = open(filename)
+    #循环读取文件前32行
+    for i in range(32):
+        lineStr = fr.readline()
+        for j in range(32):
+            #将每行的头32个字符值存储在returnVect数组中
+            returnVect[0, 32 * i + j] = int(lineStr[j])
+    return returnVect
+
+
+# ## 手写数字识别系统 测试代码
+
+# In[14]:
+
+
+from os import listdir
+import numpy as np
+"""
+函数说明：手写数字识别系统 测试
+
+Parameters: 
+    无
+
+Returns:
+    无
+
+"""
+def handwritingClassTest():
+    #测试集的Labels
+    hwLabels = []
+    #获取训练集目录内容
+    trainingFileList = listdir('./digits/trainingDigits')
+    #获取文件长度
+    m = len(trainingFileList)
+    print("len of trainingFileList is %d " % m)
+    #创建一个m行1024列的训练矩阵，该矩阵的每行数据存储一个图像
+    trainingMat = np.zeros((m,1024))
+    for i in range(m):
+        #从文件名解析分类数字，该目录下的文件按照规则命名，如文件9_45.txt的分类是9，它是数字9的第45个实例
+        #获取文件名
+        fileNameStr = trainingFileList[i]
+        #获取分类数字
+        classNumStr = int(fileNameStr.split('_')[0])
+        #将获得的类别添加到hwLabels中
+        hwLabels.append(classNumStr)
+        #将每个文件的1x1024数据存储到trainingMat矩阵中
+        trainingMat[i,:] = img2vector('./digits/trainingDigits/%s' % (fileNameStr))
+    #获取测试集目录
+    testFileList = listdir('./digits/testDigits')
+    #错误次数
+    errorCount = 0.0
+    #获取文件长度
+    mTest = len(testFileList)
+    for i in range(mTest):
+        #获取文件名
+        fileNameStr = testFileList[i]
+        #获取分类数字
+        classNumStr = int(fileNameStr.split('_')[0])
+        #使用函数classify0()测试该目录下的每个文件
+        vectorUnderTest = img2vector('./digits/testDigits/%s' % fileNameStr)
+        classifierResult = classify0(vectorUnderTest, trainingMat, hwLabels, 4)
+        print("The classifier came back with : %d, the real answer is : %d" % (classifierResult, classNumStr))
+        if classifierResult != classNumStr:
+            errorCount += 1.0
+    print("\n The total number of errors is : %d" % errorCount)
+    print("\n The total error rate is : %f" % (errorCount / float(mTest)) )
+        
+    
+
